@@ -104,7 +104,8 @@ int main(int argc, char *argv[]) {
 	//{{{ t_gm_binary_search
 	start();
 	t_gm_binary_search<<< dimGrid,
-						  dimBlock>>> (
+						  dimBlock,
+						  T_size * sizeof(unsigned int) >>> (
 			D_d, D_size, Q_d, Q_size, R_d, T_d, T_size);
 
 	cudaThreadSynchronize();
@@ -137,8 +138,9 @@ int main(int argc, char *argv[]) {
 	/* DEBUG  END */
 
 	start();
-	t_gm_binary_search<<< dimGrid, 
-						  dimBlock >>> (
+	t_gm_binary_search<<< dimGrid,
+						  dimBlock,
+						  T_size * sizeof(unsigned int) >>> (
 			D_d, D_size, Q_d, Q_size, R_d, T_d, T_size);
 	cudaThreadSynchronize();
 	err = cudaGetLastError();

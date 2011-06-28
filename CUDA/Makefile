@@ -31,7 +31,8 @@ EXECS=pre_gm_index_wbsearch_gm_cuda \
 	  b_search \
 	  i_gm_b_search \
 	  i_sm_b_search \
-	  t_gm_b_search
+	  t_gm_b_search \
+	  t_sm_b_search
 
 .SUFFIXES: .c .cpp .cu .o
 
@@ -102,6 +103,21 @@ t_gm_b_search: radixsort.cu.o \
 		t_gm_b_search.cu.o \
 		b_search_lib.cu.o \
 		$(LFLAGS_B)
+
+t_sm_b_search: radixsort.cu.o \
+			  radixsort.o \
+			  random.cu.o \
+			  b_search_lib.cu.o \
+			  t_sm_b_search.cu.o
+	$(CPP) $(LFLAGS_A) -o $@ \
+		$(SRC) \
+		radixsort.cu.o \
+		random.cu.o \
+		radixsort.o \
+		t_sm_b_search.cu.o \
+		b_search_lib.cu.o \
+		$(LFLAGS_B)
+
 
 
 %.cu.o: %.cu

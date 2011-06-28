@@ -89,5 +89,13 @@ void t_gm_binary_search( unsigned int *db,
 					 unsigned int *R,
 					 unsigned int *T,
 					 int size_T);
-	
+__global__
+void t_sm_binary_search( unsigned int *db,
+					 int size_db, 
+					 unsigned int *q,
+					 int size_q, 
+					 unsigned int *R,
+					 unsigned int *T,
+					 int size_T);
+				     
 #endif

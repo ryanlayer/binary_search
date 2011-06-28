@@ -162,6 +162,59 @@ void i_gm_binary_search( unsigned int *db,
 }
 //}}}
 
+//{{{ __global__ void t_sm_binary_search( unsigned int *db,
+__global__
+void t_sm_binary_search( unsigned int *db,
+					 int size_db, 
+					 unsigned int *q,
+					 int size_q, 
+					 unsigned int *R,
+					 unsigned int *T,
+					 int size_T)
+				     
+{
+	extern __shared__ unsigned int L[];
+
+	unsigned int id = (blockIdx.x * blockDim.x) + threadIdx.x;
+	int c, round = 0;
+
+	while ( ( (blockDim.x * round) + threadIdx.x ) < size_T) {
+		c = (blockDim.x*round) + threadIdx.x;
+		L[c] = T[c];
+		++round;
+	}
+	__syncthreads();
+
+
+	if (id < size_q) {
+		int key = q[id];
+
+		unsigned int b = 0;
+		unsigned int t = 0;
+
+		while (b < size_T) {
+			t = L[b];
+			if (key < t)
+				b = 2*(b) + 1;
+			else if (key > t)
+				b = 2*(b) + 2;
+			else
+				break;
+		}
+
+		if (t == key)
+			R[id] = b;
+		else {
+			int new_hi, new_lo;
+			region_to_hi_lo(b - size_T, size_T + 1, size_db, &new_hi, &new_lo);
+			unsigned int x =  bound_binary_search(
+					db, size_db, key, new_lo, new_hi);
+			R[id] = x;
+		}
+	}
+}
+//}}}
+
 //{{{ __global__ void t_gm_binary_search( unsigned int *db,
 __global__
 void t_gm_binary_search( unsigned int *db,
@@ -178,18 +231,27 @@ void t_gm_binary_search( unsigned int *db,
 		int key = q[id];
 
 		unsigned int b = 0;
+		unsigned int t = 0;
 
-		while (b < size_T)
-			if (key < T[b])
+		while (b < size_T) {
+			t = T[b];
+			if (key < t)
 				b = 2*(b) + 1;
-			else if (key > T[b])
+			else if (key > t)
 				b = 2*(b) + 2;
 			else
 				break;
+		}
 
-		int new_hi, new_lo;
-		region_to_hi_lo(b - size_T, size_T + 1, size_db, &new_hi, &new_lo);
-		R[id] =  bound_binary_search(db, size_db, key, new_lo, new_hi);
+		if (t == key)
+			R[id] = b;
+		else {
+			int new_hi, new_lo;
+			region_to_hi_lo(b - size_T, size_T + 1, size_db, &new_hi, &new_lo);
+			unsigned int x =  bound_binary_search(
+					db, size_db, key, new_lo, new_hi);
+			R[id] = x;
+		}
 	}
 }
 //}}}
