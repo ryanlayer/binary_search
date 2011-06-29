@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
 
 	if (argc < 4) {
-			fprintf(stderr, "usage: %s <D size> <Q size> <I size>"
+			fprintf(stderr, "usage: %s <D size> <Q size> <I/T Size>"
 					"<seed> <device>\n",
 					argv[0]);
 			return 1;
@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 	int D_size = atoi(argv[1]);
 	int Q_size = atoi(argv[2]);
 	int I_size = atoi(argv[3]);
+	int T_size = I_size;
 	int seed = atoi(argv[4]);
 	cudaError_t err;
 
@@ -58,22 +59,20 @@ int main(int argc, char *argv[]) {
 	unsigned long sort_d_time = report();
 	//}}}
 
-	/*
-	unsigned int *D_h = (unsigned int *)malloc( D_size * sizeof(unsigned int));
-	cudaMemcpy(D_h, D_d, (D_size) * sizeof(unsigned int),
-			cudaMemcpyDeviceToHost);
-	*/
-
 	int block_size = 256;
 	dim3 dimBlock(block_size);
 
+	int grid_size = ( Q_size + block_size - 1) / (block_size * 1);
+	dim3 dimGrid( grid_size );
+
+
+	//{{{ index
 	int index_grid_size = ( I_size + block_size - 1) / (block_size * 1);
 	dim3 index_dimGrid( index_grid_size );
 
 	unsigned int *I_d;
 	cudaMalloc((void **)&I_d, (I_size)*sizeof(unsigned int));
 
-	//{{{ index
 	start();
 	gen_index <<<index_dimGrid, dimBlock>>> ( D_d, D_size, I_d, I_size);
 
@@ -83,50 +82,48 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "index: %s.\n", cudaGetErrorString( err) );
 	stop();
 	unsigned long index_time = report();
-	//}}}
-
-	/*
-	unsigned int *I_h = (unsigned int *) malloc(I_size*sizeof(unsigned int));
+	
+	unsigned int *I_h = (unsigned int *)malloc(
+			I_size * sizeof(unsigned int));
 	cudaMemcpy(I_h, I_d, (I_size) * sizeof(unsigned int),
 			cudaMemcpyDeviceToHost);
-	*/
-	
-
-	int grid_size = ( Q_size + block_size - 1) / (block_size * 1);
-	dim3 dimGrid( grid_size );
-
-	unsigned int *R_d;
-	cudaMalloc((void **)&R_d, (Q_size)*sizeof(unsigned int));
-
-	//{{{ i_gm_binary_search
-	start();
-	i_gm_binary_search<<< dimGrid, dimBlock>>> (
-			D_d, D_size, Q_d, Q_size, R_d, I_d, I_size);
-
-	cudaThreadSynchronize();
-	err = cudaGetLastError();
-	if(err != cudaSuccess)
-		fprintf(stderr, "binary_search_gp 1: %s.\n", cudaGetErrorString( err) );
-
-	stop();
-	unsigned long search_gmindex_1_time = report();
-
-	start();
-	i_gm_binary_search<<< dimGrid, dimBlock>>> (
-			D_d, D_size, Q_d, Q_size, R_d, I_d, I_size);
-
-	cudaThreadSynchronize();
-	err = cudaGetLastError();
-	if(err != cudaSuccess)
-		fprintf(stderr, "binary_search_gp 2: %s.\n", cudaGetErrorString( err) );
-
-	stop();
-	unsigned long search_gmindex_2_time = report();
+	cudaFree(I_d);
 	//}}}
 
-	printf("%lu,%lu\n", 
-			search_gmindex_1_time + index_time,
-			search_gmindex_2_time + index_time);
+	//{{{ tree
+	int tree_grid_size = ( T_size + block_size - 1) / (block_size * 1);
+	dim3 tree_dimGrid( tree_grid_size );
+
+	unsigned int *T_d;
+	cudaMalloc((void **)&T_d, (T_size)*sizeof(unsigned int));
+
+	start();
+	gen_tree <<<tree_dimGrid, dimBlock>>> ( D_d, D_size, T_d, T_size);
+
+	cudaThreadSynchronize();
+	err = cudaGetLastError();
+	if(err != cudaSuccess)
+		fprintf(stderr, "tree: %s.\n", cudaGetErrorString( err) );
+	stop();
+	unsigned long tree_time = report();
+	
+	unsigned int *T_h = (unsigned int *)malloc(
+			T_size * sizeof(unsigned int));
+	cudaMemcpy(T_h, T_d, (T_size) * sizeof(unsigned int),
+			cudaMemcpyDeviceToHost);
+	cudaFree(T_d);
+
+	//}}}
+	
+	int i;
+	for (i = 0; i < I_size; i++)
+		printf( "%d\t"
+					"i:%u\t"
+					"t:%u\n",
+					i,
+					I_h[i],
+					T_h[i]
+				  );
 
 	return 0;
 }

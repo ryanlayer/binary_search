@@ -29,6 +29,7 @@ SRC= $(TIMER_FILE_SRC)
 
 EXECS=pre_gm_index_wbsearch_gm_cuda \
 	  b_search \
+	  sort_b_search \
 	  i_gm_b_search \
 	  i_sm_b_search \
 	  t_gm_b_search \
@@ -47,6 +48,51 @@ pre_gm_index_wbsearch_gm_cuda: radixsort.cu.o \
 		radixsort.o \
 		pre_gm_index_wbsearch_gm_cuda.cu.o \
 		$(LFLAGS_B)
+
+sort_b_search: radixsort.cu.o \
+			  radixsort.o \
+			  random.cu.o \
+			  b_search_lib.cu.o \
+			  sort_b_search.cu.o
+	$(CPP) $(LFLAGS_A) -o $@ \
+		$(SRC) \
+		radixsort.cu.o \
+		random.cu.o \
+		radixsort.o \
+		sort_b_search.cu.o \
+		b_search_lib.cu.o \
+		$(LFLAGS_B)
+
+b_search_index_tree_check: radixsort.cu.o \
+			  radixsort.o \
+			  random.cu.o \
+			  b_search_lib.cu.o \
+			  b_search_index_tree_check.cu.o
+	$(CPP) $(LFLAGS_A) -o $@ \
+		$(SRC) \
+		radixsort.cu.o \
+		random.cu.o \
+		radixsort.o \
+		b_search_index_tree_check.cu.o \
+		b_search_lib.cu.o \
+		$(LFLAGS_B)
+
+
+
+b_search_correctness: radixsort.cu.o \
+			  radixsort.o \
+			  random.cu.o \
+			  b_search_lib.cu.o \
+			  b_search_correctness.cu.o
+	$(CPP) $(LFLAGS_A) -o $@ \
+		$(SRC) \
+		radixsort.cu.o \
+		random.cu.o \
+		radixsort.o \
+		b_search_correctness.cu.o \
+		b_search_lib.cu.o \
+		$(LFLAGS_B)
+
 
 b_search: radixsort.cu.o \
 			  radixsort.o \
@@ -76,6 +122,21 @@ i_gm_b_search: radixsort.cu.o \
 		b_search_lib.cu.o \
 		$(LFLAGS_B)
 
+sort_i_gm_b_search: radixsort.cu.o \
+			  radixsort.o \
+			  random.cu.o \
+			  b_search_lib.cu.o \
+			  sort_i_gm_b_search.cu.o
+	$(CPP) $(LFLAGS_A) -o $@ \
+		$(SRC) \
+		radixsort.cu.o \
+		random.cu.o \
+		radixsort.o \
+		sort_i_gm_b_search.cu.o \
+		b_search_lib.cu.o \
+		$(LFLAGS_B)
+
+
 i_sm_b_search: radixsort.cu.o \
 			  radixsort.o \
 			  random.cu.o \
@@ -103,6 +164,22 @@ t_gm_b_search: radixsort.cu.o \
 		t_gm_b_search.cu.o \
 		b_search_lib.cu.o \
 		$(LFLAGS_B)
+
+sort_t_gm_b_search: radixsort.cu.o \
+			  radixsort.o \
+			  random.cu.o \
+			  b_search_lib.cu.o \
+			  sort_t_gm_b_search.cu.o
+	$(CPP) $(LFLAGS_A) -o $@ \
+		$(SRC) \
+		radixsort.cu.o \
+		random.cu.o \
+		radixsort.o \
+		sort_t_gm_b_search.cu.o \
+		b_search_lib.cu.o \
+		$(LFLAGS_B)
+
+
 
 t_sm_b_search: radixsort.cu.o \
 			  radixsort.o \

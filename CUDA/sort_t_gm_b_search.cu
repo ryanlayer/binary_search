@@ -44,6 +44,20 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "rand errors: %s.\n", cudaGetErrorString( err) );
 	//}}}
 
+	//{{{ sort Q
+	start();
+	nvRadixSort::RadixSort sort_Q_d(Q_size, true);
+	sort_Q_d.sort((unsigned int*)Q_d, 0, Q_size, 32);
+
+	cudaThreadSynchronize();
+	err = cudaGetLastError();
+	if(err != cudaSuccess)
+		fprintf(stderr, "sort q: %s.\n", cudaGetErrorString( err) );
+
+	stop();
+	unsigned long sort_q_time = report();
+	//}}}
+	
 	//{{{ sort D
 	start();
 	nvRadixSort::RadixSort sort_D_d(D_size, true);
@@ -146,8 +160,8 @@ int main(int argc, char *argv[]) {
 	//}}}
 
 	printf("%lu,%lu\n", 
-			search_gmtree_1_time + tree_time,
-			search_gmtree_2_time + tree_time);
+			search_gmtree_1_time + tree_time + sort_q_time,
+			search_gmtree_2_time + tree_time + sort_q_time);
 
 	return 0;
 }

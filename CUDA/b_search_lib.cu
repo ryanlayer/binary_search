@@ -3,7 +3,7 @@
 #include <math.h>
 #include "b_search_lib.h"
 
-//{{{ __global__ void binary_search_n( unsigned int *db,
+//{{{ __global__ void b_search( unsigned int *db,
 __global__
 void b_search( unsigned int *db,
 					 int size_db, 
@@ -14,7 +14,8 @@ void b_search( unsigned int *db,
 {
 	unsigned int id = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if ( id < size_q )
-		R[id] = binary_search_cuda(db, size_db, q[id] );
+		R[id] = bound_binary_search(db, size_db, q[id], -1, size_db );
+		//R[id] = binary_search_cuda(db, size_db, q[id] );
 }
 //}}}
 
@@ -78,6 +79,7 @@ unsigned int i_to_T(int i, int T_size, int D_size)
 //}}}       
 
 //{{{int i_to_I(int i, int I_size, int D_size)
+__device__
 unsigned int i_to_I(int i, int I_size, int D_size)
 {
 	unsigned int regions = I_size + 1;
@@ -114,6 +116,15 @@ void i_sm_binary_search( unsigned int *db,
 		int key = q[id];
 		int b = binary_search_cuda(L, size_I, key);
 
+		int new_hi, new_lo;
+		region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
+		unsigned int x =  bound_binary_search(
+				db, size_db, key, new_lo, new_hi);
+		R[id] = x;
+
+
+
+		/*
 		int new_hi = ( (b+1)*size_db - (size_I - (b+2))) / size_I;
 		int new_lo = ( (b  )*size_db - (size_I - (b+1))) / size_I;
 
@@ -126,6 +137,7 @@ void i_sm_binary_search( unsigned int *db,
 		}
 
 		R[id] =  bound_binary_search(db, size_db, key, new_lo, new_hi);
+		*/
 	}
 }
 //}}}
@@ -147,6 +159,17 @@ void i_gm_binary_search( unsigned int *db,
 		int key = q[id];
 		int b = binary_search_cuda(I, size_I, key);
 
+		int new_hi, new_lo;
+		region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
+		unsigned int x =  bound_binary_search(
+				db, size_db, key, new_lo, new_hi);
+		R[id] = x;
+		//R[id] = b;
+
+
+		//int b =  bound_binary_search(db, size_db, key, -1, size_I);
+
+			/*
 		int new_hi = ( (b+1)*size_db - (size_I - (b+2))) / size_I;
 		int new_lo = ( (b  )*size_db - (size_I - (b+1))) / size_I;
 
@@ -158,6 +181,7 @@ void i_gm_binary_search( unsigned int *db,
 		}
 
 		R[id] =  bound_binary_search(db, size_db, key, new_lo, new_hi);
+		*/
 	}
 }
 //}}}
@@ -203,7 +227,7 @@ void t_sm_binary_search( unsigned int *db,
 		}
 
 		if (t == key)
-			R[id] = b;
+			R[id] = i_to_T(b, size_T, size_db);
 		else {
 			int new_hi, new_lo;
 			region_to_hi_lo(b - size_T, size_T + 1, size_db, &new_hi, &new_lo);
@@ -244,7 +268,7 @@ void t_gm_binary_search( unsigned int *db,
 		}
 
 		if (t == key)
-			R[id] = b;
+			R[id] = i_to_T(b, size_T, size_db);
 		else {
 			int new_hi, new_lo;
 			region_to_hi_lo(b - size_T, size_T + 1, size_db, &new_hi, &new_lo);
