@@ -58,7 +58,12 @@ int main(int argc, char *argv[]) {
 	stop();
 	unsigned long sort_d_time = report();
 	//}}}
-
+	
+	unsigned int *D_h = (unsigned int *)malloc(
+			D_size * sizeof(unsigned int));
+	cudaMemcpy(D_h, D_d, (D_size) * sizeof(unsigned int),
+			cudaMemcpyDeviceToHost);
+	
 	int block_size = 256;
 	dim3 dimBlock(block_size);
 
@@ -118,11 +123,13 @@ int main(int argc, char *argv[]) {
 	int i;
 	for (i = 0; i < I_size; i++)
 		printf( "%d\t"
-					"i:%u\t"
-					"t:%u\n",
+					"i:%u,%u\t"
+					"t:%u,%u\n",
 					i,
-					I_h[i],
-					T_h[i]
+					//_i_to_I(i,I_size,D_size),
+					//_i_to_T(i,T_size,D_size),
+					I_h[i],D_h[ _i_to_I(i,I_size,D_size) ],
+					T_h[i],D_h[ _i_to_T(i,T_size,D_size) ]
 				  );
 
 	return 0;

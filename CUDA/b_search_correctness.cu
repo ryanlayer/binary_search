@@ -125,6 +125,11 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "index: %s.\n", cudaGetErrorString( err) );
 	stop();
 	unsigned long index_time = report();
+
+	unsigned int *I_h = (unsigned int *)malloc(
+			I_size * sizeof(unsigned int));
+	cudaMemcpy(I_h, I_d, (I_size) * sizeof(unsigned int),
+			cudaMemcpyDeviceToHost);
 	//}}}
 
 	//{{{ i_gm_binary_search
@@ -190,6 +195,12 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "tree: %s.\n", cudaGetErrorString( err) );
 	stop();
 	unsigned long tree_time = report();
+
+	unsigned int *T_h = (unsigned int *)malloc(
+			T_size * sizeof(unsigned int));
+	cudaMemcpy(T_h, T_d, (T_size) * sizeof(unsigned int),
+			cudaMemcpyDeviceToHost);
+
 	//}}}
 	
 	//{{{ t_gm_binary_search
@@ -263,15 +274,58 @@ int main(int argc, char *argv[]) {
 	cudaFree(TSR_d);
 	//}}}
 
-
+	int *I = (int *) malloc(I_size * sizeof(int));
 
 	int i;
-	for (i = 0; i < Q_size; i++)
+	for (i = 0; i < Q_size; i++) {
+		if (BR_h[i] != IGR_h[i])
+				printf(".");
+		else
+				printf("-");
+		if (BR_h[i] != ISR_h[i])
+				printf(".");
+		else
+				printf("-");
+		if (BR_h[i] != TGR_h[i])
+				printf(".");
+		else
+				printf("-");
+		if (BR_h[i] != TSR_h[i])
+				printf(".");
+		else
+				printf("-");
+
+		printf("\t");
+		/*
 		if ( (BR_h[i] != IGR_h[i]) ||
 			 (BR_h[i] != ISR_h[i]) ||
 			 (BR_h[i] != TGR_h[i]) ||
 			 (BR_h[i] != TSR_h[i]) )
-			printf( "%d\t"
+			printf("-\t");
+		else 
+			printf("+\t");
+		*/
+
+		printf( "%d\t"
+				"%u\t"
+				"q:%u\t"
+				"b:%u\t"
+				"ig:%u\t"
+				"is:%u\t"
+				"tg:%u\t"
+				"ts:%u\n",
+				i,
+				D_h[ BR_h[i] ],
+				Q_h[i],
+				BR_h[i],
+				IGR_h[i],
+				ISR_h[i],
+				TGR_h[i],
+				TSR_h[i]
+			  );
+		/*
+		if ( D_h[ BR_h[i] ] == Q_h[i] )
+			printf( "=\t%d\t"
 					"d:%u\t"
 					"q:%u\t"
 					"b:%u\t"
@@ -288,6 +342,13 @@ int main(int argc, char *argv[]) {
 					TGR_h[i],
 					TSR_h[i]
 				  );
+			*/
+	}
+
+	/*
+	for (i = 0; i < I_size - 1; i++) 
+			printf("I\t%d\t%d\t%u\n", i, _i_to_I(i,I_size,D_size),I_h[i]);
+	*/
 
 	return 0;
 }

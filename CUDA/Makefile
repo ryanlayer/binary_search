@@ -33,9 +33,21 @@ EXECS=pre_gm_index_wbsearch_gm_cuda \
 	  i_gm_b_search \
 	  i_sm_b_search \
 	  t_gm_b_search \
-	  t_sm_b_search
+	  t_sm_b_search \
+	  b_search_correctness \
+	  b_search_index_tree_check
 
 .SUFFIXES: .c .cpp .cu .o
+
+all: b_search \
+	 b_search \
+  	 sort_b_search \
+  	 i_gm_b_search \
+  	 i_sm_b_search \
+  	 t_gm_b_search \
+  	 t_sm_b_search \
+  	 b_search_correctness \
+  	 b_search_index_tree_check
 
 pre_gm_index_wbsearch_gm_cuda: radixsort.cu.o \
 			  radixsort.o \

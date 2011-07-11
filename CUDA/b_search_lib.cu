@@ -15,7 +15,6 @@ void b_search( unsigned int *db,
 	unsigned int id = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if ( id < size_q )
 		R[id] = bound_binary_search(db, size_db, q[id], -1, size_db );
-		//R[id] = binary_search_cuda(db, size_db, q[id] );
 }
 //}}}
 
@@ -63,14 +62,14 @@ unsigned int i_to_T(int i, int T_size, int D_size)
 {
 	int hi = D_size;
 	double row_d = logf(i + 1) / logf(2);
-	unsigned int row = (int) (row_d);
-	unsigned int prev = powf(2, row) - 1;
-	unsigned int i_row = i - prev;
+	unsigned long int row = (int) (row_d);
+	unsigned long int prev = powf(2, row) - 1;
+	unsigned long int i_row = i - prev;
 
-	unsigned int hi_v = 2*i_row + 1;
-	unsigned int lo_v = powf(2, row + 1) - (2*i_row +1);
-	unsigned int div = powf(2,row + 1);
-	unsigned int r = ( hi_v*hi - lo_v) / div;
+	unsigned long int hi_v = 2*i_row + 1;
+	unsigned long int lo_v = powf(2, row + 1) - (2*i_row +1);
+	unsigned long int div = powf(2,row + 1);
+	unsigned long int r = ( hi_v*hi - lo_v) / div;
 
 	//printf("hi:%d\tlo:%d\trow:%u\thi_v:%u\tlo_v:%u\tdiv:%u\tr:%u\n",
 			//hi, lo, row, hi_v, lo_v, div, r);
@@ -82,9 +81,10 @@ unsigned int i_to_T(int i, int T_size, int D_size)
 __device__
 unsigned int i_to_I(int i, int I_size, int D_size)
 {
-	unsigned int regions = I_size + 1;
-	unsigned int hi = D_size;
-	unsigned int r =( (i+1)*hi - (regions - (i+1))) / (regions);
+	unsigned long int regions = I_size + 1;
+	unsigned long int hi = D_size;
+	unsigned long int j = i;
+	unsigned int r =( (j+1)*hi - (regions - (j+1))) / (regions);
 	return r;
 }
 //}}}
@@ -156,14 +156,25 @@ void i_gm_binary_search( unsigned int *db,
 	unsigned int id = (blockIdx.x * blockDim.x) + threadIdx.x;
 
 	if (id < size_q) {
-		int key = q[id];
-		int b = binary_search_cuda(I, size_I, key);
+		unsigned long int key = q[id];
+		//int b = binary_search_cuda(I, size_I, key);
+		unsigned long int b = bound_binary_search(I, size_I, key, -1, size_I);
 
+		/*
+		R[id] = b;
+		int new_hi, new_lo;
+		region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
+
+
+		R[id] = db[ i_to_I(b, size_I, size_db) ];
+		*/
+	
 		int new_hi, new_lo;
 		region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
 		unsigned int x =  bound_binary_search(
 				db, size_db, key, new_lo, new_hi);
 		R[id] = x;
+
 		//R[id] = b;
 
 
@@ -213,8 +224,8 @@ void t_sm_binary_search( unsigned int *db,
 	if (id < size_q) {
 		int key = q[id];
 
-		unsigned int b = 0;
-		unsigned int t = 0;
+		unsigned long int b = 0;
+		unsigned long int t = 0;
 
 		while (b < size_T) {
 			t = L[b];
@@ -254,8 +265,8 @@ void t_gm_binary_search( unsigned int *db,
 	if (id < size_q) {
 		int key = q[id];
 
-		unsigned int b = 0;
-		unsigned int t = 0;
+		unsigned long int b = 0;
+		unsigned long int t = 0;
 
 		while (b < size_T) {
 			t = T[b];
@@ -267,6 +278,9 @@ void t_gm_binary_search( unsigned int *db,
 				break;
 		}
 
+		/*
+			R[id] = b - size_T;
+		*/
 		if (t == key)
 			R[id] = i_to_T(b, size_T, size_db);
 		else {
@@ -370,18 +384,66 @@ int binary_search_cuda( unsigned int *db,
 __device__
 void region_to_hi_lo(int region, int I_size, int D_size, int *D_hi, int *D_lo)
 {
-	unsigned int hi = D_size;
-	int new_hi = ( (region+1)*hi - (I_size - (region+1)) ) / I_size;
-	int new_lo = (( (region)*hi - (I_size - (region+1)) ) / I_size) - 1;
+	unsigned long int hi = D_size;
+	unsigned long int r = region;
 
-	if (region == 0)
+	unsigned long int l_new_hi = ((r+1)*hi - (I_size - (r+1)) ) / I_size;
+	//int new_hi = ( (region+1)*hi - (I_size - (region+1)) ) / I_size;
+	//int new_lo = (( (region)*hi - (I_size - (region+1)) ) / I_size) - 1;
+	unsigned long int l_new_lo = (((r)*hi - (I_size - (r+1)) ) / I_size) - 1;
+
+	int new_hi = l_new_hi, new_lo = l_new_lo;
+
+	if (region == 0) {
+		new_hi = l_new_hi;
 		new_lo = -1;
-	else if (region == I_size) {
+	} else if (region == I_size) {
 		new_hi = D_size;
-		new_lo = ( (region-1)*hi - (I_size - (region+1)) ) / I_size;
+		l_new_lo = ( (r-1)*hi - (I_size - (r+1)) ) / I_size;
+		new_lo = l_new_lo;
 	}
 	
 	*D_hi = new_hi;
 	*D_lo = new_lo;
 }
 //}}}
+
+//{{{int i_to_T(int i, int T_size, int D_size)
+unsigned int _i_to_T(int i, int T_size, int D_size)
+{
+	int hi = D_size;
+	double row_d = logf(i + 1) / logf(2);
+	unsigned int row = (int) (row_d);
+	unsigned int prev = powf(2, row) - 1;
+	unsigned int i_row = i - prev;
+
+	unsigned int hi_v = 2*i_row + 1;
+	unsigned int lo_v = powf(2, row + 1) - (2*i_row +1);
+	unsigned int div = powf(2,row + 1);
+	unsigned int r = ( hi_v*hi - lo_v) / div;
+
+	//printf("hi:%d\tlo:%d\trow:%u\thi_v:%u\tlo_v:%u\tdiv:%u\tr:%u\n",
+			//hi, lo, row, hi_v, lo_v, div, r);
+	return r; 
+}       
+//}}}       
+
+//{{{int i_to_I(int i, int I_size, int D_size)
+unsigned int _i_to_I(int i, int I_size, int D_size)
+{
+	unsigned long int regions = I_size + 1;
+	unsigned long int hi = D_size;
+	unsigned long int j = i;
+	unsigned int r =( (j+1)*hi - (regions - (j+1))) / (regions);
+
+	/*
+	unsigned long int a =(j+1)*hi;
+	unsigned long int b = regions - (j+1);
+
+	printf("\t%lu\t%lu\t%lu\n", a, b, regions);
+	*/
+	return r;
+}
+//}}}
+
+

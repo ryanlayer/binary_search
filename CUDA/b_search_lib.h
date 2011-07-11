@@ -97,5 +97,12 @@ void t_sm_binary_search( unsigned int *db,
 					 unsigned int *R,
 					 unsigned int *T,
 					 int size_T);
-				     
+					     
+unsigned int _i_to_T(int i,
+					int T_size,
+					int D_size);
+ 
+unsigned int _i_to_I(int i,
+					int I_size,
+					int D_size);
 #endif
