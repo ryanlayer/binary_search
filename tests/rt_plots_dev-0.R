@@ -1,8 +1,8 @@
 
 range<-"5M_1M"
-device<-"GTX460"
+#device<-"GTX460"
 #device<-"GTX285"
-#device<-"9800GT"
+device<-"9800GT"
 
 t_sm_name<-paste("t_sm_b_search_cuda-",range,".",device,".txt",sep="")
 t_gm_name<-paste("t_gm_b_search_cuda-",range,".",device,".txt",sep="")

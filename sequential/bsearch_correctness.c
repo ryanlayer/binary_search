@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "bsearch_lib.h"
+#include "bsearch.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,55 +17,43 @@ int main(int argc, char *argv[])
 	int T_size = I_size;
 	int seed = atoi(argv[4]);
 
+	unsigned int *D = (unsigned int *)
+		malloc(D_size * sizeof(unsigned int));
+	unsigned int *Q = (unsigned int *)
+		malloc(Q_size * sizeof(unsigned int));
 	srand(seed);
+	generate_rand_unsigned_int_set(D, D_size);
+	generate_rand_unsigned_int_set(Q, Q_size);
 
-	int *D = (int *) malloc(D_size * sizeof(int));
+	qsort(D, D_size, sizeof(unsigned int), compare_unsigned_int);
 
-	int j;
-	for (j = 0; j < D_size; j++)
-		D[j] = rand();
-
-	qsort(D, D_size, sizeof(int), compare_int);
-
-	int *I = (int *) malloc(I_size * sizeof(int));
-
-	for (j = 0; j < I_size; j++) 
-		I[ j ] = D[ i_to_I(j,I_size,D_size) ];
-
+	start();
 	int *T = (int *) malloc(T_size * sizeof(int));
+	create_tree(D, D_size, T, T_size);
+	stop();
+	unsigned long tree_time = report();
 
-	for (j = 0; j < T_size; j++) 
-		T[ j ] = D[ i_to_T(j,T_size,D_size) ];
-
-
-
-	/* PRINT LIST
-	for (j = 0; j < d; j++)
-		printf("%d\t%d\n", j, D[j]);
-	*/
+	start();
+	int *I = (int *) malloc(I_size * sizeof(int));
+	create_index(D, D_size, I, I_size);
+	stop();
+	unsigned long index_time = report();
 
 	int *BR = (int *) malloc(Q_size * sizeof(int));
 	int *IR = (int *) malloc(Q_size * sizeof(int));
 	int *TR = (int *) malloc(Q_size * sizeof(int));
 	/* Search list */
 	unsigned long total_time = 0;
+	int j;
 	for (j = 0; j < Q_size; j++) {
-		int r = rand();
-
-		BR[j] = b_search(r, D, D_size, -1, D_size);
-		IR[j] = i_b_search(r, D, D_size, I, I_size);
-		TR[j] = t_b_search(r, D, D_size, T, T_size);
+		BR[j] = bsearch_seq(Q[j], D, D_size, -1, D_size);
+		IR[j] = i_bsearch_seq(Q[j], D, D_size, I, I_size);
+		TR[j] = t_bsearch_seq(Q[j], D, D_size, T, T_size);
 	}
 
 	for (j = 0; j < Q_size; j++)
-		printf("%d\tb:%d\ti:%d\tt:%d\n", j, BR[j], IR[j], TR[j]);
-	/*
 		if ( (BR[j] != IR[j]) ||
 			 (BR[j] != TR[j]) )
 			printf("%d\tb:%d\ti:%d\tt:%d\n", j, BR[j], IR[j], TR[j]);
-	*/
-
-
-
 	return 0;
 }

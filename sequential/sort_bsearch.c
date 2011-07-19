@@ -6,15 +6,14 @@
 int main(int argc, char *argv[])
 {
 
-	if (argc < 5) {
-		fprintf(stderr, "usages:\t%s <D size > <Q size> <I size> "
+	if (argc < 4) {
+		fprintf(stderr, "usages:\t%s <D size > <Q size> "
 				"<seed>\n", argv[0]);
 		return 1;
 	}
 	int D_size = atoi(argv[1]); // size of data set D
 	int Q_size = atoi(argv[2]); // size of query set Q
-	int I_size = atoi(argv[3]); // size of index I
-	int seed = atoi(argv[4]);
+	int seed = atoi(argv[3]);
 
 	unsigned int *D = (unsigned int *)
 		malloc(D_size * sizeof(unsigned int));
@@ -27,17 +26,15 @@ int main(int argc, char *argv[])
 	qsort(D, D_size, sizeof(unsigned int), compare_unsigned_int);
 
 	start();
-	unsigned int *I = (unsigned int *)
-			malloc(I_size * sizeof(unsigned int));
-	create_index(D, D_size, I, I_size);
+	qsort(Q, Q_size, sizeof(unsigned int), compare_unsigned_int);
 	stop();
-	unsigned long index_time = report();
+	unsigned long sort_time = report();
 
 	unsigned long total_time_1 = 0;
 	int j;
 	start();
 	for (j = 0; j < Q_size; j++) {
-		int c = i_bsearch_seq(Q[j], D, D_size, I, I_size);
+		int c = bsearch_seq(Q[j], D, D_size, -1, D_size);
 	}
 	stop();
 	total_time_1 = report();
@@ -45,14 +42,12 @@ int main(int argc, char *argv[])
 	unsigned long total_time_2 = 0;
 	start();
 	for (j = 0; j < Q_size; j++) {
-		int c = i_bsearch_seq(Q[j], D, D_size, I, I_size);
-	}	
+		int c = bsearch_seq(Q[j], D, D_size, -1, D_size);
+	}
 	stop();
 	total_time_2 = report();
 
-
-	printf("%lu,%lu\n", total_time_1 + index_time, total_time_2 + index_time);
-
+	printf("%lu,%lu\n", total_time_1 + sort_time,total_time_2 + sort_time);
 
 	return 0;
 }

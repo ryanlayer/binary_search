@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "bsearch_lib.h"
+#include "bsearch.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,47 +16,42 @@ int main(int argc, char *argv[])
 	int T_size = atoi(argv[3]); // size of index I
 	int seed = atoi(argv[4]);
 
+	unsigned int *D = (unsigned int *)
+		malloc(D_size * sizeof(unsigned int));
+	unsigned int *Q = (unsigned int *)
+		malloc(Q_size * sizeof(unsigned int));
 	srand(seed);
+	generate_rand_unsigned_int_set(D, D_size);
+	generate_rand_unsigned_int_set(Q, Q_size);
 
-	int *D = (int *) malloc(D_size * sizeof(int));
+	qsort(D, D_size, sizeof(unsigned int), compare_unsigned_int);
 
+	start();
+	unsigned int *T = (unsigned int *)
+		malloc(T_size * sizeof(unsigned int));
+	create_tree(D, D_size, T, T_size);
+	stop();
+	unsigned long tree_time = report();
+
+	unsigned long total_time_1 = 0;
 	int j;
-	for (j = 0; j < D_size; j++)
-		D[j] = rand();
-
-	qsort(D, D_size, sizeof(int), compare_int);
-
-	/* PRINT LIST
-	for (j = 0; j < d; j++)
-		printf("%d\t%d\n", j, D[j]);
-	*/
-
-	int *T = (int *) malloc(T_size * sizeof(int));
-
-	for (j = 0; j < T_size; j++) 
-		T[ j ] = D[ i_to_T(j,T_size,D_size) ];
-
-	/* PRINT TREE and INDEX
-	for (j = 0; j < d; j++)
-		printf("%d\ti:%d,%d\tt:%d,%d\n", 
-				j,
-				I[j],i_to_I(j,i,d),
-				T[j],i_to_T(j,i,d)
-			  );
-	*/
-
-	/* Search list */
-	unsigned long total_time = 0;
+	start();
 	for (j = 0; j < Q_size; j++) {
-		int r = rand();
-
-		start();
-		int c = t_b_search(r, D, D_size, T, T_size);
-		stop();
-		total_time += report();
+		int c = t_bsearch_seq(Q[j], D, D_size, T, T_size);
 	}
+	stop();
+	total_time_1 = report();
 
-	printf("%lu\n", total_time);
+	unsigned long total_time_2 = 0;
+	start();
+	for (j = 0; j < Q_size; j++) {
+		int c = t_bsearch_seq(Q[j], D, D_size, T, T_size);
+	}
+	stop();
+	total_time_2 = report();
+
+
+	printf("%lu,%lu\n", total_time_1 + tree_time,total_time_2 + tree_time);
 
 	return 0;
 }
