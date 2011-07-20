@@ -164,7 +164,8 @@ unsigned int i_bsearch_seq(unsigned int key,
 						   unsigned int I_size)
 {
 	int hi, lo;
-	unsigned int region = isearch_seq(key, I, I_size + 1, D_size, &hi, &lo);
+	//unsigned int region = isearch_seq(key, I, I_size + 1, D_size, &hi, &lo);
+	unsigned int region = isearch_seq(key, I, I_size, D_size, &hi, &lo);
 	//printf("i:%d,%d,%d\n",region,lo,hi);
 	return bsearch_seq(key, D, D_size, lo, hi);
 }
@@ -179,7 +180,8 @@ unsigned int isearch_seq(unsigned int key,
 						 unsigned int *D_lo)
 {
 	unsigned int region = bsearch_seq(key, I, I_size, -1, I_size);
-	region_to_hi_lo(region, I_size, D_size, D_hi, D_lo);
+	//printf("i\tr:%u\tI_size:%u\n",region, I_size);
+	region_to_hi_lo(region, I_size + 1, D_size, D_hi, D_lo);
 	return region;
 }
 //}}}
@@ -224,6 +226,7 @@ unsigned int tsearch_seq(unsigned int key,
 	//printf("%d\t%d\n", b, region);
 	//region_to_hi_lo(b - T_size, T_size + 1, D_size, D_hi, D_lo);
 
+	//printf("t\tr:%u\tT_size:%u\n",region, T_size);
 	if (T[b] == key) {
 		*hit = 1;
 		//fprintf(stderr, "HIT\tk:%u\tb:%lu\tT:%u\n",key,b,T[b]);
@@ -246,6 +249,7 @@ unsigned int t_bsearch_seq(unsigned int key,
 {
 	int hi, lo, hit;
 	unsigned int region = tsearch_seq(key, T, T_size, D_size, &hi, &lo, &hit);
+	//printf("t:%d,%d,%d\n",region,lo,hi);
 	if (hit == 1)
 		return i_to_T(region, T_size, D_size);
 	else
