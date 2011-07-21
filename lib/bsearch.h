@@ -18,8 +18,8 @@ unsigned int i_to_T(unsigned int i,
 void region_to_hi_lo(unsigned int region,
 					 unsigned int I_size,
 					 unsigned int D_size,
-					 unsigned int *D_hi,
-					 unsigned int *D_lo);
+					 int *D_hi,
+					 int *D_lo);
 
 void create_index(unsigned int *D,
 				  unsigned int D_size,
@@ -36,8 +36,8 @@ unsigned int isearch_seq(unsigned int key,
 						   unsigned int *I,
 						   unsigned int I_size,
 						   unsigned int D_size,
-						   unsigned int *D_hi,
-						   unsigned int *D_lo);
+						   int *D_hi,
+						   int *D_lo);
 
 void create_tree(unsigned int *D,
 				 unsigned int D_size,
@@ -48,9 +48,9 @@ unsigned int tsearch_seq(unsigned int key,
 					     unsigned int *T,
 					     unsigned int T_size,
 					     unsigned int D_size,
-					     unsigned int *D_hi,
-					     unsigned int *D_lo,
-						 unsigned int *hit);
+					     int *D_hi,
+					     int *D_lo,
+						 int *hit);
 
 unsigned int t_bsearch_seq(unsigned int key,
 					       unsigned int *D,

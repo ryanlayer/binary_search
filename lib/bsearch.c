@@ -94,8 +94,8 @@ unsigned int i_to_T(unsigned int i,
 void region_to_hi_lo(unsigned int region,
 					 unsigned int I_size,
 					 unsigned int D_size,
-					 unsigned int *D_hi,
-					 unsigned int *D_lo)
+					 int *D_hi,
+					 int *D_lo)
 {
 	unsigned long int hi = D_size;
 	unsigned long int r = region;
@@ -176,8 +176,8 @@ unsigned int isearch_seq(unsigned int key,
 						 unsigned int *I,
 						 unsigned int I_size,
 						 unsigned int D_size,
-						 unsigned int *D_hi,
-						 unsigned int *D_lo)
+						 int *D_hi,
+						 int *D_lo)
 {
 	unsigned int region = bsearch_seq(key, I, I_size, -1, I_size);
 	//printf("i\tr:%u\tI_size:%u\n",region, I_size);
@@ -203,9 +203,9 @@ unsigned int tsearch_seq(unsigned int key,
 					     unsigned int *T,
 					     unsigned int T_size,
 					     unsigned int D_size,
-					     unsigned int *D_hi,
-					     unsigned int *D_lo,
-						 unsigned int *hit)
+					     int *D_hi,
+					     int *D_lo,
+						 int *hit)
 {
 	unsigned long int b = 0;
 	unsigned long int size = T_size;

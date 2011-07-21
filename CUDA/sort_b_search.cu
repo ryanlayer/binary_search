@@ -3,12 +3,10 @@
 #include <cuda.h>
 #include <cutil.h>
 #include <sys/time.h>
-
 #include "radixsort.h"
 #include "random.hpp"
-#include "../lib/timer.h"
-
-#include "b_search_lib.h"
+#include "timer.h"
+#include "bsearch_cuda.h"
 
 int main(int argc, char *argv[]) {
 

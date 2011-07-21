@@ -6,9 +6,9 @@
 
 #include "radixsort.h"
 #include "random.hpp"
-#include "../lib/timer.h"
+#include "timer.h"
 
-#include "b_search_lib.h"
+#include "bsearch_cuda.h"
 
 int main(int argc, char *argv[]) {
 
