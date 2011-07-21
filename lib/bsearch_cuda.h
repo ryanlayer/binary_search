@@ -12,12 +12,21 @@ void b_search( unsigned int *db,
 			   unsigned int *q,
 			   int size_q, 
 			   unsigned int *R );
+/*
 __global__
 void binary_search_i( unsigned int *db,
 					 int size_db, 
 					 unsigned int *q,
 					 int size_q, 
 					 unsigned int *R,
+					 int size_I);
+*/
+
+__device__
+int i_binary_search( unsigned int *db,
+					 int size_db, 
+					 unsigned int s,
+					 unsigned int *I,
 					 int size_I);
 
 __device__

@@ -157,45 +157,32 @@ void i_gm_binary_search( unsigned int *db,
 
 	if (id < size_q) {
 		unsigned long int key = q[id];
-		//int b = binary_search_cuda(I, size_I, key);
 		unsigned long int b = bound_binary_search(I, size_I, key, -1, size_I);
-
-		/*
-		R[id] = b;
-		int new_hi, new_lo;
-		region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
-
-
-		R[id] = db[ i_to_I(b, size_I, size_db) ];
-		*/
-	
 		int new_hi, new_lo;
 		region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
 		unsigned int x =  bound_binary_search(
 				db, size_db, key, new_lo, new_hi);
 		R[id] = x;
-
-		//R[id] = b;
-
-
-		//int b =  bound_binary_search(db, size_db, key, -1, size_I);
-
-			/*
-		int new_hi = ( (b+1)*size_db - (size_I - (b+2))) / size_I;
-		int new_lo = ( (b  )*size_db - (size_I - (b+1))) / size_I;
-
-		if (b == 0)
-			new_lo = -1;
-		else if (b == size_I) {
-			new_hi = size_db;
-			new_lo = ( (b-1)*size_db - (size_I - (b)) ) / size_I;
-		}
-
-		R[id] =  bound_binary_search(db, size_db, key, new_lo, new_hi);
-		*/
 	}
 }
 //}}}
+
+//{{{ __device__ int i_binary_search( unsigned int *db,
+__device__
+int i_binary_search( unsigned int *db,
+					 int size_db, 
+					 unsigned int s,
+					 unsigned int *I,
+					 int size_I)
+				     
+{
+	unsigned int b = bound_binary_search(I, size_I, s, -1, size_I);
+	int new_hi, new_lo;
+	region_to_hi_lo(b, size_I + 1, size_db, &new_hi, &new_lo);
+	return bound_binary_search(db, size_db, s, new_lo, new_hi);
+}
+//}}}
+
 
 //{{{ __global__ void t_sm_binary_search( unsigned int *db,
 __global__
@@ -294,6 +281,7 @@ void t_gm_binary_search( unsigned int *db,
 }
 //}}}
 
+/*
 //{{{ __global__ void binary_search_i( unsigned int *db,
 __global__
 void binary_search_i( unsigned int *db,
@@ -339,6 +327,7 @@ void binary_search_i( unsigned int *db,
 	}
 }
 //}}}
+*/
 
 //{{{ __device__ int bound_binary_search( unsigned int *db,
 __device__
